@@ -13,7 +13,7 @@ def read_tree(bitreader):
     Huffman trees are stored in the following format:
       * TreeLeaf is represented by the two bits 01, followed by 8 bits
           for the symbol at that leaf.
-      * TreeLeaf that is None (the special "end of message" character) 
+      * TreeLeaf that is None (the special "end of message" character)
           is represented by the two bits 00.
       * TreeBranch is represented by the single bit 1, followed by a
           description of the left subtree and then the right subtree.
@@ -24,7 +24,13 @@ def read_tree(bitreader):
     Returns:
       A Huffman tree constructed according to the given description.
     '''
-    pass
+    bit = bitreader.readbit()
+
+    if bit == 1:
+        # do recursion and return something
+
+    if bit == 0:
+        # need to read something else and do something else probably
 
 
 def decode_byte(tree, bitreader):
@@ -32,7 +38,7 @@ def decode_byte(tree, bitreader):
     Reads bits from the bit reader and traverses the tree from
     the root to a leaf. Once a leaf is reached, bits are no longer read
     and the value of that leave is returned.
-    
+
     Args:
       bitreader: An instance of bitio.BitReader to read the tree from.
       tree: A Huffman tree.
