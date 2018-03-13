@@ -33,9 +33,10 @@ class BitWriter:
 
     def flush(self):
         '''MUST CALL WHEN DONE. Writes out any partial bytes to file.'''
-        self.out.write(bytes((self.accumulator,)))
-        self.accumulator = 0
-        self.bcount = 0
+        if self.bcount > 0:
+            self.out.write(bytes((self.accumulator,)))
+            self.accumulator = 0
+            self.bcount = 0
 
 
 class BitReader:

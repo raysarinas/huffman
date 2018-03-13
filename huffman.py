@@ -28,14 +28,14 @@ def make_tree(freq_table):
     """
 
     trees = BinaryHeap()
-    trees.add(TreeLeaf(None), 1)
+    trees.insert(TreeLeaf(None), 1)
     for (symbol, freq) in freq_table.items():
-        trees.add(TreeLeaf(symbol), freq)
+        trees.insert(TreeLeaf(symbol), freq)
 
     while len(trees) > 1:
         right, rfreq = trees.pop_min()
         left, lfreq = trees.pop_min()
-        trees.add(TreeBranch(left, right), lfreq+rfreq)
+        trees.insert(TreeBranch(left, right), lfreq+rfreq)
 
     tree, _ = trees.pop_min()
     return tree
