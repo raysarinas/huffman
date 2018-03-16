@@ -106,7 +106,7 @@ def decompress(compressed, uncompressed):
         # Write the stored values in the tree (ordered by bit sequence)
         # else:
         #     uncompressed.write(bytes([decodedBytes]))  # as a byte in uncompressed
-        bitwriter.writebits(content, 8)
+        bitwriter.writebits(decodedBytes, 8)
 
 
 
