@@ -27,23 +27,24 @@ def read_tree(bitreader):
     bit = bitreader.readbit()
 
     if bit == 1: # if first bit is one it's a branch
-        # recursively call self to make branch i guess
+        # recursively call self to make branch
         left = read_tree(bitreader)
         right = read_tree(bitreader)
 
-        # return branch that is found probably
+        # return branch that is found
         # like return branch with its left and right leaves
         return huffman.TreeBranch(left, right)
 
     if bit == 0:
-        # if first bit is 0 it is a leaf i think
+        # if first bit is 0 gotta read the next bit since it is a leaf
         bit = bitreader.readbit()
 
         if bit == 1: # tree leaf with value "01"
             return huffman.TreeLeaf(bitreader.readbits(8))
         elif bit == 0: # tree leaf with value "00"
             return huffman.TreeLeaf(None)
-            # return huffman.TreeLeafEndMessage() # NEED TO DO SOMETHING HERE I THINK
+            # not sure if this is necessary
+
 
 def decode_byte(tree, bitreader):
     """
@@ -126,9 +127,6 @@ def decompress(compressed, uncompressed):
         # else:
         #     uncompressed.write(bytes([decodedBytes]))  # as a byte in uncompressed
         bitwriter.writebits(decodedBytes, 8)
-
-
-
 
 def write_tree(tree, bitwriter):
     '''Write the specified Huffman tree to the given bit writer.  The
