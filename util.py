@@ -42,7 +42,7 @@ def read_tree(bitreader):
         if bit == 1: # tree leaf with value "01"
             return huffman.TreeLeaf(bitreader.readbits(8))
         elif bit == 0: # tree leaf with value "00"
-            pass
+            return huffman.TreeLeaf(None)
             # return huffman.TreeLeafEndMessage() # NEED TO DO SOMETHING HERE I THINK
 
 def decode_byte(tree, bitreader):
@@ -63,11 +63,14 @@ def decode_byte(tree, bitreader):
         # Check if the node is the EOF is reached, return nothing and stop decoding
 
         # THIS LINE IS BROKEN IDK HOW TO FIX SOS
-        if isinstance(tree, None): # NOT SURE IF THIS FIXES A PROBLEM TreeLeafEndMessage):
-            return None
+        # if isinstance(tree, None): # NOT SURE IF THIS FIXES A PROBLEM TreeLeafEndMessage):
+            # return None
         # Check if the node is a Leaf node, return the value of this node
-        elif isinstance(tree, TreeLeaf):
-            return tree.value
+        if isinstance(tree, TreeLeaf):
+            if tree.value == None:
+                return None
+            else:
+                return tree.value
         # If niether then must be a Branch, check the current bit to see where to go
         else:
             # 0 bit means move toward left branch based on Huffman Tree
