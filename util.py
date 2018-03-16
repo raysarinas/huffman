@@ -57,6 +57,23 @@ def decode_byte(tree, bitreader):
     Returns:
       Next byte of the compressed bit stream.
     """
+    while True:
+        bit = bitreader.readbit()
+        # Check if the node is the EOF is reached, return nothing and stop decoding
+        if isinstance(tree, TreeLeafEndMessage):
+            return None
+        # Check if the node is a Leaf node, return the value of this node
+        elif isinstance(tree, TreeLeaf):
+            return tree.value
+        # If niether then must be a Branch, check the current bit to see where to go
+        else:
+            # 0 bit means move toward left branch based on Huffman Tree
+            if bit == 0:
+                tree = tree.left
+            # Bit == 1, move towards right branch based on Huffman Tree
+            else:
+                tree == tree.right
+
     pass
 
 
