@@ -87,9 +87,25 @@ def decompress(compressed, uncompressed):
       compressed: A file stream from which compressed input is read.
       uncompressed: A writable file stream to which the uncompressed
           output is written.
-
     '''
-    pass
+    # Gets bits from compressed file stream
+    bitInputStream = bitio.BitReader(compressed)
+    # read huffman tree from 'compressed' by read_tree
+    tree = read_tree(bitInputStream)
+
+    # decode tree
+    while True:
+        message = huffman.decode(tree, bitInputStream)
+
+        # if recive endmessage
+        if message == None:
+            break
+        # Write the stored values in the tree (ordered by bit sequence)
+        else:
+            uncompressed.write(bytes([val]))  # as a byte in uncompressed
+
+
+
 
 
 def write_tree(tree, bitwriter):
