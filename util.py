@@ -74,8 +74,6 @@ def decode_byte(tree, bitreader):
             else:
                 tree == tree.right
 
-    pass
-
 
 def decompress(compressed, uncompressed):
     '''First, read a Huffman tree from the 'compressed' stream using your
