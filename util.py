@@ -77,6 +77,19 @@ def decode_byte(tree, bitreader):
             else:
                 tree == tree.right
 
+        # This probably doesn't fix anything but at least i tried i guess
+        if isinstance(tree, TreeLeaf):
+            return tree.value
+
+        elif tree is not None:
+            if bit == 0:
+                tree = tree.left
+            else:
+                tree == tree.right
+
+        else:
+            return None
+
 
 def decompress(compressed, uncompressed):
     '''First, read a Huffman tree from the 'compressed' stream using your
