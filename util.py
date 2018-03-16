@@ -27,24 +27,23 @@ def read_tree(bitreader):
     bit = bitreader.readbit()
 
     if bit == 1: # if first bit is one it's a branch
-        # recursively call self to make branch
+        # recursively call self to make branch i guess
         left = read_tree(bitreader)
         right = read_tree(bitreader)
 
-        # return branch that is found
+        # return branch that is found probably
         # like return branch with its left and right leaves
         return huffman.TreeBranch(left, right)
 
     if bit == 0:
-        # if first bit is 0 gotta read the next bit since it is a leaf
+        # if first bit is 0 it is a leaf i think
         bit = bitreader.readbit()
 
         if bit == 1: # tree leaf with value "01"
             return huffman.TreeLeaf(bitreader.readbits(8))
         elif bit == 0: # tree leaf with value "00"
             return huffman.TreeLeaf(None)
-            # not sure if this is necessary
-
+            # return huffman.TreeLeafEndMessage() # NEED TO DO SOMETHING HERE I THINK
 
 def decode_byte(tree, bitreader):
     """
@@ -67,13 +66,13 @@ def decode_byte(tree, bitreader):
         # if isinstance(tree, None): # NOT SURE IF THIS FIXES A PROBLEM TreeLeafEndMessage):
             # return None
         # Check if the node is a Leaf node, return the value of this node
-        if isinstance(tree, TreeLeaf):
-            if tree.value == None:
-                return None
-            else:
-                return tree.value
+        # if isinstance(tree, TreeLeaf):
+        #     # if tree.value == None:
+        #     #     return None
+        #     # else:
+        #     return tree.value
         # If niether then must be a Branch, check the current bit to see where to go
-        else:
+        # else:
             # 0 bit means move toward left branch based on Huffman Tree
             if bit == 0:
                 tree = tree.left
@@ -85,14 +84,14 @@ def decode_byte(tree, bitreader):
         if isinstance(tree, TreeLeaf):
             return tree.value
 
-        elif tree is not None:
-            if bit == 0:
-                tree = tree.left
-            else:
-                tree == tree.right
-
-        else:
-            return None
+        # elif tree is not None:
+        #     if bit == 0:
+        #         tree = tree.left
+        #     else:
+        #         tree == tree.right
+        #
+        # else:
+        #     return None
 
 
 def decompress(compressed, uncompressed):
@@ -127,6 +126,9 @@ def decompress(compressed, uncompressed):
         # else:
         #     uncompressed.write(bytes([decodedBytes]))  # as a byte in uncompressed
         bitwriter.writebits(decodedBytes, 8)
+
+
+
 
 def write_tree(tree, bitwriter):
     '''Write the specified Huffman tree to the given bit writer.  The
