@@ -87,21 +87,26 @@ def decompress(compressed, uncompressed):
           output is written.
     '''
     # Gets bits from compressed file stream
+    #bitio.BitReader object wrapping the compressed stream to be able to read the input one bit at a time
     bitInputStream = bitio.BitReader(compressed)
-    # read huffman tree from 'compressed' by read_tree
+
+    # construct BitWriter object for 'unompressed' file stream
+    bitwriter = bitio.BitWriter(uncompressed)
+
+    # read huffman tree from the compressed file using read_tree
     tree = read_tree(bitInputStream)
 
-    # decode tree
+    # Repeatedly read coded bits from the file, decode them using tree
     while True:
-        message = huffman.decode(tree, bitInputStream)
+        decodedBytes = decode_byte(tree, bitInputStream)
 
-        # if recive endmessage
-        if message == None:
+        # if found end of message, stop reading
+        if decodedBytes == None:
             break
         # Write the stored values in the tree (ordered by bit sequence)
-        else:
-            uncompressed.write(bytes([val]))  # as a byte in uncompressed
-
+        # else:
+        #     uncompressed.write(bytes([decodedBytes]))  # as a byte in uncompressed
+        bitwriter.writebits(content, 8)
 
 
 
