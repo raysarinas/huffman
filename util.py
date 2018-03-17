@@ -73,12 +73,12 @@ def decode_byte(tree, bitreader):
         #     return tree.value
         # If niether then must be a Branch, check the current bit to see where to go
         # else:
-            # 0 bit means move toward left branch based on Huffman Tree
-            if bit == 0:
-                tree = tree.left
-            # Bit == 1, move towards right branch based on Huffman Tree
-            else:
-                tree == tree.right
+        # 0 bit means move toward left branch based on Huffman Tree
+        if bit == 0:
+            tree = tree.left
+        # Bit == 1, move towards right branch based on Huffman Tree
+        else:
+            tree == tree.right
 
         # This probably doesn't fix anything but at least i tried i guess
         if isinstance(tree, TreeLeaf):
