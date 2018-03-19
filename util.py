@@ -43,7 +43,12 @@ def read_tree(bitreader):
             return huffman.TreeLeaf(bitreader.readbits(8))
         elif bit == 0: # tree leaf with value "00"
             return huffman.TreeLeaf(None)
-            # return huffman.TreeLeafEndMessage() # NEED TO DO SOMETHING HERE I THINK
+
+    '''
+    # this is something else that might work but whomsdt knows honestly
+    tree = huffman.make_tree(huffman.make_freq_table(bitreader))
+    return tree
+    '''
 
 def decode_byte(tree, bitreader):
     """
@@ -84,15 +89,6 @@ def decode_byte(tree, bitreader):
         if isinstance(tree, TreeLeaf):
             return tree.value
 
-        # elif tree is not None:
-        #     if bit == 0:
-        #         tree = tree.left
-        #     else:
-        #         tree == tree.right
-        #
-        # else:
-        #     return None
-
 
 def decompress(compressed, uncompressed):
     '''First, read a Huffman tree from the 'compressed' stream using your
@@ -126,8 +122,6 @@ def decompress(compressed, uncompressed):
         # else:
         #     uncompressed.write(bytes([decodedBytes]))  # as a byte in uncompressed
         bitwriter.writebits(decodedBytes, 8)
-
-
 
 
 def write_tree(tree, bitwriter):
