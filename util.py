@@ -1,3 +1,7 @@
+'''
+ASSIGNMENT 2: HUFFMAN CODING
+
+'''
 # The functions in this file are to be implemented by students.
 
 import bitio
@@ -24,25 +28,23 @@ def read_tree(bitreader):
     Returns:
       A Huffman tree constructed according to the given description.
     '''
-    bit = bitreader.readbit()
+    # check the first bit
+    firstbit = bitreader.readbit()
 
-    if bit == 0:
-        # if first bit is 0 it is a leaf i think
-        bit = bitreader.readbit()
+    if firstbit == 0: # if 0, leaf.
+        secondbit = bitreader.readbit() # check second bit
 
-        if bit == 1: # tree leaf with value "01"
-            return huffman.TreeLeaf(bitreader.readbits(8))
-        elif bit == 0: # tree leaf with value "00"
+        if secondbit == 0: # if leaf is '00', then EOM
             return huffman.TreeLeaf(None)
+        else: # if leaf is '01', then get those bytes sis
+            return huffman.TreeLeaf(bitreader.readbits(8))
 
-    if bit == 1: # if first bit is one it's a branch
-        # recursively call self to make branch i guess
+    else: # otherwise first bit should be a 1, so it's a branch i guess
+        # return the children! (left and right)
         left = read_tree(bitreader)
         right = read_tree(bitreader)
-
-        # return branch that is found probably
-        # like return branch with its left and right leaves
         return huffman.TreeBranch(left, right)
+
 
 def decode_byte(tree, bitreader):
     """
@@ -57,23 +59,25 @@ def decode_byte(tree, bitreader):
     Returns:
       Next byte of the compressed bit stream.
     """
+
     while True:
-        bit = bitreader.readbit()
-        # Check if the node is a Leaf node, return the value of this node
-        if isinstance(tree, huffman.TreeLeaf):
-            return tree.value
-        # If niether then must be a Branch, check the current bit to see where to go
-        elif isinstance(tree, huffman.TreeBranch):
-        # 0 bit means move toward left branch based on Huffman Tree
+        if isinstance(tree, huffman.TreeBranch):
+        # if currently transversing a branch, then check if child/node
+        # either move to the left or right subbranch/child/node
+            bit = bitreader.readbit()
+
             if bit == 0:
                 tree = tree.left
-            # Bit == 1, move towards right branch based on Huffman Tree
-            else:
-                tree == tree.right
+            elif bit == 1:
+                tree = tree.right
+
+        elif isinstance(tree, huffman.TreeLeaf):
+        # when transversing tree and get to a leaf, then just return its value
+            return tree.value
 
         else:
-            raise TypeError('{} isn’t a tree'.format(type(tree)))
-            # CHANGE THE FORMATTING OF THIS SO ISNT TOO SIMILAR
+        # raise a type error if whatever it is that got inputted isn't a tree
+            raise TypeError(type(tree), 'is not a tree!')
 
 
 def decompress(compressed, uncompressed):
@@ -87,27 +91,24 @@ def decompress(compressed, uncompressed):
       uncompressed: A writable file stream to which the uncompressed
           output is written.
     '''
-    # Gets bits from compressed file stream
-    #bitio.BitReader object wrapping the compressed stream to be able to read the input one bit at a time
-    bitInputStream = bitio.BitReader(compressed)
 
-    # construct BitWriter object for 'unompressed' file stream
-    bitwriter = bitio.BitWriter(uncompressed)
+    # get bits from compressed file stream and use it to get tree
+    inputstream = bitio.BitReader(compressed)
+    #bitwriter = bitio.BitWriter(uncompressed)
+    tree = read_tree(inputstream)
 
-    # read huffman tree from the compressed file using read_tree
-    tree = read_tree(bitInputStream)
-
-    # Repeatedly read coded bits from the file, decode them using tree
-    while True:
-        decodedBytes = decode_byte(tree, bitInputStream)
-
-        # if found end of message, stop reading
-        if decodedBytes == None:
+    while True: # repeatedly read coded bits from file and decode them using tree
+        decoded_bytes = decode_byte(tree, inputstream)
+        if decoded_bytes == None:
             break
-        # Write the stored values in the tree (ordered by bit sequence)
-        # else:
-        #     uncompressed.write(bytes([decodedBytes]))  # as a byte in uncompressed
-        bitwriter.writebits(decodedBytes, 8)
+
+        # write stored values in tree? idk melisse knows probably
+        uncompressed.write(bytes([decoded_bytes]))
+        #bitwriter.writebits(decoded_bytes, 8)
+
+    # NOTE: DOING THAT BITWRITER STUFF SLOWS DOWN THE DECOMPRESSION BY
+    # LIKE 5 SECONDS BUT IDK IF THAT WOULD BE AN ISSUE OTHERWISE
+
 
 
 def write_tree(tree, bitwriter):
