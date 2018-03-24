@@ -26,15 +26,6 @@ def read_tree(bitreader):
     '''
     bit = bitreader.readbit()
 
-    if bit == 1: # if first bit is one it's a branch
-        # recursively call self to make branch i guess
-        left = read_tree(bitreader)
-        right = read_tree(bitreader)
-
-        # return branch that is found probably
-        # like return branch with its left and right leaves
-        return huffman.TreeBranch(left, right)
-
     if bit == 0:
         # if first bit is 0 it is a leaf i think
         bit = bitreader.readbit()
@@ -44,11 +35,14 @@ def read_tree(bitreader):
         elif bit == 0: # tree leaf with value "00"
             return huffman.TreeLeaf(None)
 
-    '''
-    # this is something else that might work but whomsdt knows honestly
-    tree = huffman.make_tree(huffman.make_freq_table(bitreader))
-    return tree
-    '''
+    if bit == 1: # if first bit is one it's a branch
+        # recursively call self to make branch i guess
+        left = read_tree(bitreader)
+        right = read_tree(bitreader)
+
+        # return branch that is found probably
+        # like return branch with its left and right leaves
+        return huffman.TreeBranch(left, right)
 
 def decode_byte(tree, bitreader):
     """
@@ -65,29 +59,21 @@ def decode_byte(tree, bitreader):
     """
     while True:
         bit = bitreader.readbit()
-        # Check if the node is the EOF is reached, return nothing and stop decoding
-
-        # THIS LINE IS BROKEN IDK HOW TO FIX SOS
-        # if isinstance(tree, None): # NOT SURE IF THIS FIXES A PROBLEM TreeLeafEndMessage):
-            # return None
         # Check if the node is a Leaf node, return the value of this node
-        # if isinstance(tree, TreeLeaf):
-        #     # if tree.value == None:
-        #     #     return None
-        #     # else:
-        #     return tree.value
-        # If niether then must be a Branch, check the current bit to see where to go
-        # else:
-        # 0 bit means move toward left branch based on Huffman Tree
-        if bit == 0:
-            tree = tree.left
-        # Bit == 1, move towards right branch based on Huffman Tree
-        else:
-            tree == tree.right
-
-        # This probably doesn't fix anything but at least i tried i guess
-        if isinstance(tree, TreeLeaf):
+        if isinstance(tree, huffman.TreeLeaf):
             return tree.value
+        # If niether then must be a Branch, check the current bit to see where to go
+        elif isinstance(tree, huffman.TreeBranch):
+        # 0 bit means move toward left branch based on Huffman Tree
+            if bit == 0:
+                tree = tree.left
+            # Bit == 1, move towards right branch based on Huffman Tree
+            else:
+                tree == tree.right
+
+        else:
+            raise TypeError('{} isn’t a tree'.format(type(tree)))
+            # CHANGE THE FORMATTING OF THIS SO ISNT TOO SIMILAR
 
 
 def decompress(compressed, uncompressed):
