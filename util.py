@@ -94,7 +94,7 @@ def decompress(compressed, uncompressed):
 
     # get bits from compressed file stream and use it to get tree
     inputstream = bitio.BitReader(compressed)
-    #bitwriter = bitio.BitWriter(uncompressed)
+    # notcompressed = bitio.BitWriter(uncompressed)
     tree = read_tree(inputstream)
 
     while True: # repeatedly read coded bits from file and decode them using tree
@@ -102,12 +102,9 @@ def decompress(compressed, uncompressed):
         if decoded_bytes == None:
             break
 
-        # write stored values in tree? idk melisse knows probably
+        # write bits to uncompressed file
         uncompressed.write(bytes([decoded_bytes]))
-        #bitwriter.writebits(decoded_bytes, 8)
-
-    # NOTE: DOING THAT BITWRITER STUFF SLOWS DOWN THE DECOMPRESSION BY
-    # LIKE 5 SECONDS BUT IDK IF THAT WOULD BE AN ISSUE OTHERWISE
+        # notcompressed.writebits(decoded_bytes, 8) <-- this makes it too slow
 
 
 
@@ -123,20 +120,22 @@ def write_tree(tree, bitwriter):
         bitwriter: An instance of bitio.BitWriter to write the tree to.
     '''
     if type(tree) == huffman.TreeLeaf:
-        if tree.value is None:  # checks if the value is none
+        if tree.value == None:  # checks if the value is none
             bitwriter.writebit(0)  # writes "00"
             bitwriter.writebit(0)
         else:
             bitwriter.writebit(0)  # writes 01
             bitwriter.writebit(1)
-            huffman.TreeLeaf(bitwriter.writebits(tree.value, 8))  # writes the next 8 bits that should come after 01
+            huffman.TreeLeaf(bitwriter.writebits(tree.value, 8))
+            # writes the next 8 bits that should come after 01
+            
     elif type(tree) == huffman.TreeBranch:
         # Writes the single bit 1, followed by a description of the left subtree and then the right subtree.
         bitwriter.writebit(1)
         left = write_tree(tree.left, bitwriter)
         right = write_tree(tree.right, bitwriter)
-    else:
-        pass
+    # else:
+    #     pass
 
 
 
