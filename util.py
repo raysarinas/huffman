@@ -39,7 +39,7 @@ def read_tree(bitreader):
         else: # if leaf is '01', then get those bytes sis
             return huffman.TreeLeaf(bitreader.readbits(8))
 
-    else: # otherwise first bit should be a 1, so it's a branch i guess
+    else: # otherwise first bit should be a 1, so it's a branch
         # return the children! (left and right)
         left = read_tree(bitreader)
         right = read_tree(bitreader)
@@ -91,27 +91,16 @@ def decompress(compressed, uncompressed):
         uncompressed: A writable file stream to which the uncompressed
         output is written.
     '''
-
     # get bits from compressed file stream and use it to get tree
     inputstream = bitio.BitReader(compressed)
-    # notcompressed = bitio.BitWriter(uncompressed)
     tree = read_tree(inputstream)
 
     while True: # repeatedly read coded bits from file and decode them using tree
-        try:
-            decoded_bytes = decode_byte(tree, inputstream)
-            if decoded_bytes == None:
-                break
-
-            # write bits to uncompressed file
-            uncompressed.write(bytes([decoded_bytes]))
-            # notcompressed.writebits(decoded_bytes, 8) <-- this makes it too slow
-
-        except EOFError: # when done going thru bytes, break
-            #uncompressed.write(bytes([29]))
-            #print("EOF")
+        decoded_bytes = decode_byte(tree, inputstream)
+        if decoded_bytes == None:
             break
-
+        else: # write bits to uncompressed file
+            uncompressed.write(bytes([decoded_bytes]))
 
 
 def write_tree(tree, bitwriter):
@@ -163,19 +152,19 @@ def compress(tree, uncompressed, compressed):
     # reads from decoded uncompressed file
     uncompstream = bitio.BitReader(uncompressed)
     enctable = huffman.make_encoding_table(tree) # make encoding table
-    write_tree(tree, compressedstream) # get that table sis?
+    write_tree(tree, compressedstream) # get that table sis
 
-    # read each bit and write to file until done
-    while True:
+    while True: # read each bit and write to file until done
         try:
-            read = uncompstream.readbits(8) # read 8 bits
-            comptable = enctable[read] # store bits in encoding table i guess
+            current = uncompstream.readbits(8) # read 8 bits
+            comptable = enctable[current] # store bits in encoding table
             for bit in comptable:
                 compressedstream.writebit(bit)
 
-        except EOFError: # when done going thru bytes, break then flush
-            #comptable = enctable[None]
-            #print("EOF")
+        except EOFError: # when done going thru bytes
+            for bit in enctable[None]:
+                compressedstream.writebit(bit) # write EOF sequence
+            print("EOF")
             break
 
-    compressedstream.flush()
+    compressedstream.flush() # flush since done writing entire compressed file
