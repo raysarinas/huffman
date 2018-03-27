@@ -1,7 +1,7 @@
 '''
 ASSIGNMENT 2: HUFFMAN CODING
 Melisse Doroteo - 1499913
-Raymond Sarinas - 14???????
+Raymond Sarinas - 1476504
 '''
 
 import bitio
@@ -62,14 +62,14 @@ def decode_byte(tree, bitreader):
 
     while True:
         if isinstance(tree, huffman.TreeBranch):
-            # if currently transversing a branch, then check if child/node
-            # either move to the left or right subbranch/child/node
-                bit = bitreader.readbit()
+        # if currently transversing a branch, then check if child/node
+        # either move to the left or right subbranch/child/node
+            bit = bitreader.readbit()
 
-                if bit == 0:
-                    tree = tree.left
-                elif bit == 1:
-                    tree = tree.right
+            if bit == 0:
+                tree = tree.left
+            elif bit == 1:
+                tree = tree.right
 
         elif isinstance(tree, huffman.TreeLeaf):
         # when transversing tree and get to a leaf, then just return its value
@@ -98,13 +98,19 @@ def decompress(compressed, uncompressed):
     tree = read_tree(inputstream)
 
     while True: # repeatedly read coded bits from file and decode them using tree
-        decoded_bytes = decode_byte(tree, inputstream)
-        if decoded_bytes == None:
-            break
+        try:
+            decoded_bytes = decode_byte(tree, inputstream)
+            if decoded_bytes == None:
+                break
 
-        # write bits to uncompressed file
-        uncompressed.write(bytes([decoded_bytes]))
-        # notcompressed.writebits(decoded_bytes, 8) <-- this makes it too slow
+            # write bits to uncompressed file
+            uncompressed.write(bytes([decoded_bytes]))
+            # notcompressed.writebits(decoded_bytes, 8) <-- this makes it too slow
+
+        except EOFError: # when done going thru bytes, break
+            #uncompressed.write(bytes([29]))
+            #print("EOF")
+            break
 
 
 
@@ -120,23 +126,21 @@ def write_tree(tree, bitwriter):
         bitwriter: An instance of bitio.BitWriter to write the tree to.
     '''
     if type(tree) == huffman.TreeLeaf:
-        if tree.value == None:  # checks if the value is none
-            bitwriter.writebit(0)  # writes "00"
+        # check if tree is a leaf
+        if tree.value == None: # if empty, write '00'
             bitwriter.writebit(0)
-        else:
-            bitwriter.writebit(0)  # writes 01
+            bitwriter.writebit(0)
+        else: # else, write '01' and following 8 bits
+            bitwriter.writebit(0)
             bitwriter.writebit(1)
             huffman.TreeLeaf(bitwriter.writebits(tree.value, 8))
-            # writes the next 8 bits that should come after 01
-            
+
     elif type(tree) == huffman.TreeBranch:
-        # Writes the single bit 1, followed by a description of the left subtree and then the right subtree.
+        # if tree is a branch, then recursively write in the left and
+        # right children/branches/subtree(s)
         bitwriter.writebit(1)
         left = write_tree(tree.left, bitwriter)
         right = write_tree(tree.right, bitwriter)
-    # else:
-    #     pass
-
 
 
 def compress(tree, uncompressed, compressed):
@@ -154,25 +158,24 @@ def compress(tree, uncompressed, compressed):
         compressed: A file stream that will receive the tree description
         and the coded input data.
     '''
+    # writes to encoded compressed file
+    compressedstream = bitio.BitWriter(compressed)
+    # reads from decoded uncompressed file
+    uncompstream = bitio.BitReader(uncompressed)
+    enctable = huffman.make_encoding_table(tree) # make encoding table
+    write_tree(tree, compressedstream) # get that table sis?
 
-    compressedStream = bitio.BitWriter(compressed)     # writes the ouput stream(compressed) in binary mode
-    uncompStream = bitio.BitReader(uncompressed)       # reads the input stream(uncompressed) in binary mode
-    enctable = huffman.make_encoding_table(tree)       # creates the encoding table
-    write_tree(tree, compressedStream)                 # get tree encoding table
-
-    # reads each entry of the encoding table till we hit the EOF
+    # read each bit and write to file until done
     while True:
-        # read 8 bits
         try:
-            read = uncompStream.readbits(8)
-            # stores it in encoding table
-            comptable = enctable[read]
+            read = uncompstream.readbits(8) # read 8 bits
+            comptable = enctable[read] # store bits in encoding table i guess
             for bit in comptable:
-                compressedStream.writebit(bit)
-        # when eof occurs, break from loop
-        except EOFError:
-            comptable = enctable[None]
-            print("EOF")
+                compressedstream.writebit(bit)
+
+        except EOFError: # when done going thru bytes, break then flush
+            #comptable = enctable[None]
+            #print("EOF")
             break
 
-    compressedStream.flush()
+    compressedstream.flush()
